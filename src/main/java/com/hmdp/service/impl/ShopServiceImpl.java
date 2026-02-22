@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>
  *  服务实现类
@@ -42,7 +44,20 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         }
         //如果数据库中存在，就将数据存储到 Redis 中并且返回
         shop = JSONUtil.toJsonStr(shopEntity);
-        stringRedisTemplate.opsForValue().set(shopKey, shop);
+        stringRedisTemplate.opsForValue().set(shopKey, shop, RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
         return Result.ok(shopEntity);
+    }
+
+    @Override
+    public Result update(Shop shop) {
+        //首先更新数据库信息
+        Long id = shop.getId();
+        if (id == null) {
+           return Result.fail("商铺信息更新失败");
+        }
+        updateById(shop);
+        //其次删除 Redis 对应缓存
+        stringRedisTemplate.delete(RedisConstants.CACHE_SHOP_KEY + id);
+        return Result.ok();
     }
 }
