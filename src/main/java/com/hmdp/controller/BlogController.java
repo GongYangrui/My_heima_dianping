@@ -96,4 +96,16 @@ public class BlogController {
     public Result getBlogLikes(@PathVariable("id") Long id) {
         return blogService.getBlogLikes(id);
     }
+
+    @GetMapping("/of/user")
+    public Result queryBlogByUserId(
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam("id") Long id
+    ) {
+        Page<Blog> page = blogService.lambdaQuery().eq(Blog::getUserId, id).page(
+                new Page<>(current, SystemConstants.MAX_PAGE_SIZE)
+        );
+        List<Blog> records = page.getRecords();
+        return Result.ok(records);
+    }
 }
