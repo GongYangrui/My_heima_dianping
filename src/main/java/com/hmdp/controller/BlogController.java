@@ -8,6 +8,7 @@ import com.hmdp.entity.Blog;
 import com.hmdp.entity.User;
 import com.hmdp.service.IBlogService;
 import com.hmdp.service.IUserService;
+import com.hmdp.utils.RedisConstants;
 import com.hmdp.utils.SystemConstants;
 import com.hmdp.utils.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +81,8 @@ public class BlogController {
             User user = userService.getById(userId);
             blog.setName(user.getNickName());
             blog.setIcon(user.getIcon());
-            Boolean isMember = stringRedisTemplate.opsForSet().isMember("blog:liked:" + blog.getId(), blog.getUserId().toString());
-            blog.setIsLike(Boolean.TRUE.equals(isMember));
+            Double score = stringRedisTemplate.opsForZSet().score(RedisConstants.BLOG_LIKED_KEY + blog.getId(), blog.getUserId().toString());
+            blog.setIsLike(score != null);
         });
         return Result.ok(records);
     }
@@ -89,5 +90,10 @@ public class BlogController {
     @GetMapping("{id}")
     public Result queryBlogById(@PathVariable("id") Long id) {
         return blogService.queryBlogById(id);
+    }
+
+    @GetMapping("/likes/{id}")
+    public Result getBlogLikes(@PathVariable("id") Long id) {
+        return blogService.getBlogLikes(id);
     }
 }

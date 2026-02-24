@@ -27,4 +27,11 @@ public interface IBlogService extends IService<Blog> {
      * @return
      */
     Result likeBlog(Long id);
+
+    /**
+     * 根据博客 id 获得对应点赞列表（按照点赞顺序，先点赞的排在前面）
+     * @param id
+     * @return
+     */
+    Result getBlogLikes(Long id);
 }
