@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -99,6 +101,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Result logout(HttpServletRequest request) {
         String token = request.getHeader("authorization");
         stringRedisTemplate.delete(RedisConstants.LOGIN_USER_KEY + token);
+        return Result.ok();
+    }
+
+    @Override
+    public Result sign() {
+        Long userId = UserHolder.getUser().getId();
+        LocalDateTime now = LocalDateTime.now();
+        String keyPrefix = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String key = RedisConstants.USER_SIGN_KEY + userId + keyPrefix;
+        int dayOfMonth = now.getDayOfMonth();
+        stringRedisTemplate.opsForValue().setBit(
+                key,
+                dayOfMonth - 1,
+                true
+        );
         return Result.ok();
     }
 }
