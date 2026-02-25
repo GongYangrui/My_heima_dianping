@@ -45,4 +45,10 @@ public interface IUserService extends IService<User> {
      * @return
      */
     Result sign();
+
+    /**
+     * 统计当月连续签到次数
+     * @return
+     */
+    Result signCount();
 }
